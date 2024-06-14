@@ -5,7 +5,8 @@ int main(int argc, char *argv[]) {
     GtkWidget *window;
     GtkWidget *main_box;
     GtkWidget *menu_box;
-    GtkWidget *generos_button;
+    GtkWidget *generos_button, *usuario_button, *cerrar_sesion_button;
+    GtkWidget *content_box, *header_box, *label;
 
     gtk_init(&argc, &argv);
 
@@ -23,10 +24,32 @@ int main(int argc, char *argv[]) {
     menu_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_box_pack_start(GTK_BOX(main_box), menu_box, FALSE, FALSE, 10);
 
+    // Se crea el botón "Usuario"
+    usuario_button = gtk_button_new_with_label("Usuario");
+    gtk_box_pack_start(GTK_BOX(menu_box), usuario_button, FALSE, FALSE, 10);
+
     // Se crea el botón "Géneros"
     generos_button = gtk_button_new_with_label("Géneros");
     gtk_widget_set_size_request(generos_button, 200, -1); 
     gtk_box_pack_start(GTK_BOX(menu_box), generos_button, FALSE, FALSE, 0);
+
+    // Se crea el botón "Cerrar sesión"
+    cerrar_sesion_button = gtk_button_new_with_label("Cerrar Sesión");
+    gtk_box_pack_start(GTK_BOX(menu_box), cerrar_sesion_button, FALSE, FALSE, 200);
+
+    // Contenedor vertical para el contenido a la derecha
+    content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_box_pack_start(GTK_BOX(main_box), content_box, TRUE, TRUE, 10);
+
+    // Contenedor horizontal para el encabezado
+    header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(content_box), header_box, FALSE, FALSE, 10);
+
+    // Texto "Mis Películas" en el encabezado
+    label = gtk_label_new("Mis Películas");
+    gtk_box_pack_start(GTK_BOX(header_box), label, FALSE, FALSE, 10);
+    gtk_widget_set_margin_start(label, 20);
+
 
     // Conectar la señal del botón para abrir el diálogo
     g_signal_connect(generos_button, "clicked", G_CALLBACK(al_hacer_clic_en_boton_genero), NULL);
