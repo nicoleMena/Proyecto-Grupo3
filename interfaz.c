@@ -7,6 +7,7 @@ int main(int argc, char *argv[]) {
     GtkWidget *menu_box;
     GtkWidget *generos_button, *usuario_button, *cerrar_sesion_button;
     GtkWidget *content_box, *header_box, *label;
+    GtkWidget *recomendaciones_box;  // Nueva caja para las recomendaciones
 
     gtk_init(&argc, &argv);
 
@@ -50,9 +51,12 @@ int main(int argc, char *argv[]) {
     gtk_box_pack_start(GTK_BOX(header_box), label, FALSE, FALSE, 10);
     gtk_widget_set_margin_start(label, 20);
 
+    // Caja para las recomendaciones
+    recomendaciones_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_box_pack_start(GTK_BOX(content_box), recomendaciones_box, TRUE, TRUE, 10);
 
     // Conectar la señal del botón para abrir el diálogo
-    g_signal_connect(generos_button, "clicked", G_CALLBACK(al_hacer_clic_en_boton_genero), NULL);
+    g_signal_connect(generos_button, "clicked", G_CALLBACK(al_hacer_clic_en_boton_genero), recomendaciones_box);
 
     gtk_widget_show_all(window);
     gtk_main();

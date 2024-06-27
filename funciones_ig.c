@@ -1,4 +1,10 @@
 #include "funciones_ig.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+static int contar_botones_seleccionados_en_list_box(GtkWidget *list_box);
+void mostrar_recomendaciones(GtkWidget *widget, const char *genres); // Declaración de la función
 
 /*
  * Esta función cuenta cuántos botones están seleccionados en un ListBox.
@@ -19,7 +25,6 @@ static int contar_botones_seleccionados_en_list_box(GtkWidget *list_box) {
     return count;
 }
 
-
 /*
  * Esta función es un callback que se llama cuando se responde a un diálogo GTK.
  * @param dialog El diálogo al cual se está respondiendo.
@@ -28,23 +33,28 @@ static int contar_botones_seleccionados_en_list_box(GtkWidget *list_box) {
  */
 void al_responder_dialogo(GtkDialog *dialog, gint response_id, gpointer user_data) {
     if (response_id == GTK_RESPONSE_OK) {
-        g_print("Los géneros seleccionados son:\n");
-        GtkWidget *list_box = GTK_WIDGET(user_data);
-        GList *children = gtk_container_get_children(GTK_CONTAINER(list_box));
+        GList *children = gtk_container_get_children(GTK_CONTAINER(user_data));
+        GString *genres = g_string_new(NULL);
+
         for (GList *iter = children; iter != NULL; iter = iter->next) {
             GtkWidget *row = GTK_WIDGET(iter->data);
             GtkWidget *check_button = gtk_bin_get_child(GTK_BIN(row));
             if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button))) {
                 const gchar *genre = gtk_button_get_label(GTK_BUTTON(check_button));
-                g_print("%s\n", genre);
+                if (genres->len > 0)
+                    g_string_append(genres, " ");
+                g_string_append(genres, genre);
             }
         }
         g_list_free(children);
-    }
 
+        GtkWidget *recomendaciones_box = GTK_WIDGET(g_object_get_data(G_OBJECT(dialog), "recomendaciones_box"));
+        mostrar_recomendaciones(recomendaciones_box, genres->str); // Cambio aquí
+
+        g_string_free(genres, TRUE);
+    }
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
-
 
 /*
  * Esta función es un callback llamada cuando se cambia el estado del botón.
@@ -66,7 +76,6 @@ void al_cambiar_estado_check_button(GtkToggleButton *toggle_button, gpointer use
     g_list_free(children);
 }
 
-
 /*
  * Esta función es para manejar el clic en el botón Género.
  * @param button El botón en el cual se ha hecho clic.
@@ -84,7 +93,7 @@ void al_hacer_clic_en_boton_genero(GtkButton *button, gpointer user_data) {
     GtkWidget *list_box = gtk_list_box_new();
 
     // Crear y añadir los géneros con check buttons al list box
-    const gchar *generos[] = {"Animado", "Comedia", "Terror", "Aventura", "Drama", "Ficción"};
+    const gchar *generos[] = {"Animada", "Comedia", "Drama", "Accion", "Ficcion", "Thriller", "Terror"};
     for (int i = 0; i < G_N_ELEMENTS(generos); i++) {
         GtkWidget *row = gtk_list_box_row_new();
         GtkWidget *check_button = gtk_check_button_new_with_label(generos[i]);
@@ -100,4 +109,40 @@ void al_hacer_clic_en_boton_genero(GtkButton *button, gpointer user_data) {
 
     // Conectar la señal de respuesta del diálogo
     g_signal_connect(dialog, "response", G_CALLBACK(al_responder_dialogo), list_box);
+
+    // Guardar la caja de recomendaciones en los datos del diálogo
+    g_object_set_data(G_OBJECT(dialog), "recomendaciones_box", user_data);
+}
+
+/*
+ * Muestra recomendaciones de películas en la interfaz grafica.
+ * Esta funcion toma un widget y una cadena de generos seleccionados,
+ * ejecuta un comando externo para obtener recomendaciones basadas en los generos,
+ * y actualiza la interfaz grafica con los resultados obtenidos.
+ * @param widget El widget de GTK donde se mostraran las recomendaciones.
+ * @param genres Cadena que contiene los géneros seleccionados por el usuario.
+ */
+void mostrar_recomendaciones(GtkWidget *widget, const char *genres) {
+    GtkWidget *recomendaciones_box = GTK_WIDGET(widget);
+    GList *children = gtk_container_get_children(GTK_CONTAINER(recomendaciones_box));
+    for (GList *iter = children; iter != NULL; iter = iter->next) {
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+    }
+    g_list_free(children);
+
+    char command[1024];
+    sprintf(command, "./algoritmo_recomendacion %s", genres);
+    FILE *fp = popen(command, "r");
+    if (fp == NULL) {
+        g_print("Failed to run command\n");
+        return;
+    }
+
+    char path[1035];
+    while (fgets(path, sizeof(path)-1, fp) != NULL) {
+        GtkWidget *label = gtk_label_new(path);
+        gtk_box_pack_start(GTK_BOX(recomendaciones_box), label, FALSE, FALSE, 0);
+    }
+    pclose(fp);
+    gtk_widget_show_all(recomendaciones_box);
 }

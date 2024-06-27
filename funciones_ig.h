@@ -7,4 +7,5 @@
 void al_responder_dialogo(GtkDialog *dialog, gint response_id, gpointer user_data);
 void al_cambiar_estado_check_button(GtkToggleButton *toggle_button, gpointer user_data);
 void al_hacer_clic_en_boton_genero(GtkButton *button, gpointer user_data);
+void mostrar_recomendaciones(GtkWidget *widget, const char *genres);
 #endif
