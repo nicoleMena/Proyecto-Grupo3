@@ -38,7 +38,7 @@ Este proyecto es un sistema de recomendación de películas desarrollado en C, u
     make
     ```
 
-# ## Pasos para Ejecución
+### Pasos para Ejecución
 1. Ejecutar la interfaz gráfica:
     ```sh
     ./interfaz
